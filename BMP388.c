@@ -13,8 +13,8 @@
 /* ----- PRIVATE FUNCTIONS PROTOTYPES ----- */
 HAL_StatusTypeDef	BMP388_SoftReset(BMP388_HandleTypeDef *bmp);
 HAL_StatusTypeDef	BMP388_GetCalibData(BMP388_HandleTypeDef *bmp);
-			float	BMP388_CompensateTemp(BMP388_HandleTypeDef *bmp, uint32_t raw_temp, float *temp);
-			float	BMP388_CompensatePress(BMP388_HandleTypeDef *bmp, float temp, uint32_t raw_press, float *press);
+	    float	BMP388_CompensateTemp(BMP388_HandleTypeDef *bmp, uint32_t raw_temp, float *temp);
+            float	BMP388_CompensatePress(BMP388_HandleTypeDef *bmp, float temp, uint32_t raw_press, float *press);
 HAL_StatusTypeDef	BMP388_ReadBytes(BMP388_HandleTypeDef *bmp, BMP388_regs reg_addr, uint8_t *buff, uint8_t len);
 HAL_StatusTypeDef	BMP388_WriteBytes(BMP388_HandleTypeDef *bmp, BMP388_regs reg_addr, uint8_t *buff, uint8_t len);
 
@@ -121,7 +121,7 @@ HAL_StatusTypeDef BMP388_SetOutputDataRate(BMP388_HandleTypeDef *bmp, uint8_t od
 
 
 /*!
- *  @brief Function to read pressure and temperature from BMP388
+ *  @brief Function to read pressure and temperature from BMP388 in forced mode
  *
  *	@param[in]	bmp				: Pointer to BMP388 structure
  *  @param[out] raw_pressure	: Pointer to the variable that contain uncompensated pressure data.
@@ -131,9 +131,9 @@ HAL_StatusTypeDef BMP388_SetOutputDataRate(BMP388_HandleTypeDef *bmp, uint8_t od
  *  @retval = HAL_OK  		-> Success
  *  @retval != HAL_OK	  	-> Failure Info
  */
-HAL_StatusTypeDef BMP388_ReadRawPressTemp(BMP388_HandleTypeDef *bmp, uint32_t *raw_pressure, uint32_t *raw_temperature){
+HAL_StatusTypeDef BMP388_ReadRawPressTempTime(BMP388_HandleTypeDef *bmp, uint32_t *raw_pressure, uint32_t *raw_temperature, uint32_t *time){
 	HAL_StatusTypeDef rslt;
-	uint8_t power_mode = 0b00100011;
+	uint8_t pwr_ctrl = BMP388_PWR_CTRL_PRESS_ON | BMP388_PWR_CTRL_TEMP_ON | BMP388_PWR_CTRL_MODE_FORCED;
 
 	uint8_t oversampling = bmp->_oversampling;
 	uint8_t odr = bmp->_odr;
@@ -157,12 +157,12 @@ HAL_StatusTypeDef BMP388_ReadRawPressTemp(BMP388_HandleTypeDef *bmp, uint32_t *r
 		return rslt;
 	}
 	// Set PWR_CTRL register
-	rslt = BMP388_WriteBytes(bmp, PWR_CTRL, &power_mode, 1);
+	rslt = BMP388_WriteBytes(bmp, PWR_CTRL, &pwr_ctrl, 1);
 	if(rslt != HAL_OK){
 		return rslt;
 	}
 
-	uint8_t raw_data[6];
+	uint8_t raw_data[11];
 	// Get raw data for pressure and temperature
 	rslt = BMP388_ReadBytes(bmp, DATA_0, raw_data, 6);
 	if(rslt != HAL_OK){
@@ -184,6 +184,13 @@ HAL_StatusTypeDef BMP388_ReadRawPressTemp(BMP388_HandleTypeDef *bmp, uint32_t *r
 	data_lsb = (uint32_t)raw_data[4] << 8;
 	data_msb = (uint32_t)raw_data[5] << 16;
 	*raw_temperature = data_msb | data_lsb | data_xlsb;
+
+	// Parsing time bytes
+	data_xlsb = (uint32_t)raw_data[8];
+	data_lsb = (uint32_t)raw_data[9] << 8;
+	data_msb = (uint32_t)raw_data[10] << 16;
+	*time = data_msb | data_lsb | data_xlsb;
+
 
 	return rslt;
 }
@@ -473,3 +480,4 @@ HAL_StatusTypeDef BMP388_ReadBytes(BMP388_HandleTypeDef *bmp, BMP388_regs reg_ad
 HAL_StatusTypeDef BMP388_WriteBytes(BMP388_HandleTypeDef *bmp, BMP388_regs reg_addr, uint8_t *buff, uint8_t len){
 	return HAL_I2C_Mem_Write(bmp->_hi2c, BMP388_ADDR << 1, reg_addr, I2C_MEMADD_SIZE_8BIT, buff, len, 100);
 }
+
