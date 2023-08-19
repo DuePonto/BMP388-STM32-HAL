@@ -62,6 +62,8 @@
 
 #define BMP388_CALIBDATA_LEN	21
 
+/* ----- REGISTER MACROS ----- */
+
 #define BMP388_PWR_CTRL_PRESS_ON	0b00000001
 #define BMP388_PWR_CTRL_PRESS_OFF	0b00000000
 #define BMP388_PWR_CTRL_TEMP_ON		0b00000010
@@ -69,6 +71,18 @@
 #define BMP388_PWR_CTRL_MODE_SLEEP	0b00000000
 #define BMP388_PWR_CTRL_MODE_FORCED	0b00010000
 #define BMP388_PWR_CTRL_MODE_NORMAL	0b00110000
+
+#define BMP388_FIFO_CONFIG_1_FIFO_MODE_ON            1U8
+#define BMP388_FIFO_CONFIG_1_FIFO_MODE_OFF           0U8
+#define BMP388_FIFO_CONFIG_1_FIFO_STOP_ON_FULL_ON    (1<<1)U8
+#define BMP388_FIFO_CONFIG_1_FIFO_STOP_ON_FULL_OFF   0U8
+#define BMP388_FIFO_CONFIG_1_FIFO_TIME_EN_ON         (1<<2)U8
+#define BMP388_FIFO_CONFIG_1_FIFO_TIME_EN_OFF        0U8
+#define BMP388_FIFO_CONFIG_1_FIFO_PRESS_EN_ON        (1<<3)U8
+#define BMP388_FIFO_CONFIG_1_FIFO_PRESS_EN_OFF       0U8
+#define BMP388_FIFO_CONFIG_1_FIFO_TEMP_EN_ON         (1<<4)U8
+#define BMP388_FIFO_CONFIG_1_FIFO_TEMP_EN_OFF        0U8
+
 
 
 
@@ -139,17 +153,19 @@ typedef struct{
 
 
 /* Public functions -----------------------------------------------------------------*/
-HAL_StatusTypeDef	BMP388_Init(BMP388_HandleTypeDef *bmp);
-HAL_StatusTypeDef	BMP388_SetTempOS(BMP388_HandleTypeDef *bmp, uint8_t oversample);
-HAL_StatusTypeDef	BMP388_SetPressOS(BMP388_HandleTypeDef *bmp, uint8_t oversample);
-HAL_StatusTypeDef 	BMP388_SetIIRFilterCoeff(BMP388_HandleTypeDef *bmp, uint8_t filtercoeff);
-HAL_StatusTypeDef	BMP388_SetOutputDataRate(BMP388_HandleTypeDef *bmp, uint8_t odr);
-HAL_StatusTypeDef	BMP388_ReadRawPressTempTime(BMP388_HandleTypeDef *bmp, uint32_t *raw_pressure, uint32_t *raw_temperature, uint32_t *time);
-             void	BMP388_CompensateRawPressTemp(BMP388_HandleTypeDef *bmp, uint32_t raw_pressure, uint32_t raw_temperature,
-                                                                                 float *pressure, float *temperature);
-            float	BMP388_FindAltitude(float ground_pressure, float pressure);
+HAL_StatusTypeDef    BMP388_Init(BMP388_HandleTypeDef *bmp);
+HAL_StatusTypeDef    BMP388_SetTempOS(BMP388_HandleTypeDef *bmp, uint8_t oversample);
+HAL_StatusTypeDef    BMP388_SetPressOS(BMP388_HandleTypeDef *bmp, uint8_t oversample);
+HAL_StatusTypeDef    BMP388_SetIIRFilterCoeff(BMP388_HandleTypeDef *bmp, uint8_t filtercoeff);
+HAL_StatusTypeDef    BMP388_SetOutputDataRate(BMP388_HandleTypeDef *bmp, uint8_t odr);
+HAL_StatusTypeDef    BMP388_ReadRawPressTempTime(BMP388_HandleTypeDef *bmp, uint32_t *raw_pressure, uint32_t *raw_temperature, uint32_t *time);
+             void    BMP388_CompensateRawPressTemp(BMP388_HandleTypeDef *bmp, uint32_t raw_pressure, uint32_t raw_temperature,
+                                                                              float *pressure, float *temperature);
+//HAL_StatusTypeDef    BMP388_NormalModeFIFO(BMP388_HandleTypeDef *bmp);
+            float    BMP388_FindAltitude(float ground_pressure, float pressure);
 
 
 
 #endif /* LIB_BMP388_HAL_BMP388_H_ */
+
 
