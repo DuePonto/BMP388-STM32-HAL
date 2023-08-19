@@ -13,7 +13,7 @@
 /* ----- PRIVATE FUNCTIONS PROTOTYPES ----- */
 HAL_StatusTypeDef	BMP388_SoftReset(BMP388_HandleTypeDef *bmp);
 HAL_StatusTypeDef	BMP388_GetCalibData(BMP388_HandleTypeDef *bmp);
-	    float	BMP388_CompensateTemp(BMP388_HandleTypeDef *bmp, uint32_t raw_temp, float *temp);
+            float	BMP388_CompensateTemp(BMP388_HandleTypeDef *bmp, uint32_t raw_temp, float *temp);
             float	BMP388_CompensatePress(BMP388_HandleTypeDef *bmp, float temp, uint32_t raw_press, float *press);
 HAL_StatusTypeDef	BMP388_ReadBytes(BMP388_HandleTypeDef *bmp, BMP388_regs reg_addr, uint8_t *buff, uint8_t len);
 HAL_StatusTypeDef	BMP388_WriteBytes(BMP388_HandleTypeDef *bmp, BMP388_regs reg_addr, uint8_t *buff, uint8_t len);

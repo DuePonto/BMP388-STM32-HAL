@@ -145,9 +145,9 @@ HAL_StatusTypeDef	BMP388_SetPressOS(BMP388_HandleTypeDef *bmp, uint8_t oversampl
 HAL_StatusTypeDef 	BMP388_SetIIRFilterCoeff(BMP388_HandleTypeDef *bmp, uint8_t filtercoeff);
 HAL_StatusTypeDef	BMP388_SetOutputDataRate(BMP388_HandleTypeDef *bmp, uint8_t odr);
 HAL_StatusTypeDef	BMP388_ReadRawPressTempTime(BMP388_HandleTypeDef *bmp, uint32_t *raw_pressure, uint32_t *raw_temperature, uint32_t *time);
-	     void	BMP388_CompensateRawPressTemp(BMP388_HandleTypeDef *bmp, uint32_t raw_pressure, uint32_t raw_temperature,
-					 	 	 	 	 	 float *pressure, float *temperature);
-	    float	BMP388_FindAltitude(float ground_pressure, float pressure);
+             void	BMP388_CompensateRawPressTemp(BMP388_HandleTypeDef *bmp, uint32_t raw_pressure, uint32_t raw_temperature,
+                                                                                 float *pressure, float *temperature);
+            float	BMP388_FindAltitude(float ground_pressure, float pressure);
 
 
 
