@@ -164,7 +164,7 @@ HAL_StatusTypeDef BMP388_ReadRawPressTempTime(BMP388_HandleTypeDef *bmp, uint32_
 
 	uint8_t raw_data[11];
 	// Get raw data for pressure and temperature
-	rslt = BMP388_ReadBytes(bmp, DATA_0, raw_data, 6);
+	rslt = BMP388_ReadBytes(bmp, DATA_0, raw_data, 11);
 	if(rslt != HAL_OK){
 		return rslt;
 	}
@@ -239,52 +239,6 @@ float BMP388_FindAltitude(float ground_pressure, float pressure){
 	//  http://forums.adafruit.com/viewtopic.php?f=22&t=58064
 
 	return 44330.0 * (1.0 - pow(pressure / ground_pressure, 0.1903));
-}
-
-
-
-HAL_StatusTypeDef BMP388_StartNormalModeFIFO(BMP388_HandleTypeDef *bmp){
-	HAL_StatusTypeDef rslt;
-
-	uint8_t pwr_ctrl = BMP388_PWR_CTRL_PRESS_ON | BMP388_PWR_CTRL_TEMP_ON | BMP388_PWR_CTRL_MODE_NORMAL;
-
-	uint8_t fifo_config_1 = BMP388_FIFO_CONFIG_1_FIFO_MODE_ON | BMP388_FIFO_CONFIG_1_FIFO_STOP_ON_FULL_ON |
-                            BMP388_FIFO_CONFIG_1_FIFO_TIME_EN_ON | BMP388_FIFO_CONFIG_1_FIFO_PRESS_EN_ON |
-							BMP388_FIFO_CONFIG_1_FIFO_TEMP_EN_ON;
-
-	uint8_t oversampling = bmp->_oversampling;
-	uint8_t odr = bmp->_odr;
-	uint8_t filtercoeff = bmp->_filtercoeff;
-
-
-
-	// Set OSR register
-	rslt = BMP388_WriteBytes(bmp, OSR, &oversampling, 1);
-	if(rslt != HAL_OK){
-		return rslt;
-	}
-	// Set ODR register
-	rslt = BMP388_WriteBytes(bmp, ODR, &odr, 1);
-	if(rslt != HAL_OK){
-		return rslt;
-	}
-	// Set CONFIG register
-	rslt = BMP388_WriteBytes(bmp, CONFIG, &filtercoeff, 1);
-	if(rslt != HAL_OK){
-		return rslt;
-	}
-	// Set PWR_CTRL register
-	rslt = BMP388_WriteBytes(bmp, PWR_CTRL, &pwr_ctrl, 1);
-	if(rslt != HAL_OK){
-		return rslt;
-	}
-	// Set FIFO_CONFIG_1 register
-	rslt = BMP388_WriteBytes(bmp, FIFO_CONFIG_1, &fifo_config_1, 1);
-	if(rslt != HAL_OK){
-		return rslt;
-	}
-
-	return rslt;
 }
 
 
@@ -526,5 +480,4 @@ HAL_StatusTypeDef BMP388_ReadBytes(BMP388_HandleTypeDef *bmp, BMP388_regs reg_ad
 HAL_StatusTypeDef BMP388_WriteBytes(BMP388_HandleTypeDef *bmp, BMP388_regs reg_addr, uint8_t *buff, uint8_t len){
 	return HAL_I2C_Mem_Write(bmp->_hi2c, BMP388_ADDR << 1, reg_addr, I2C_MEMADD_SIZE_8BIT, buff, len, 100);
 }
-
 
