@@ -243,6 +243,78 @@ float BMP388_FindAltitude(float ground_pressure, float pressure){
 
 
 
+HAL_StatusTypeDef BMP388_StartNormalModeFIFO(BMP388_HandleTypeDef *bmp){
+	HAL_StatusTypeDef rslt;
+
+	uint8_t pwr_ctrl = BMP388_PWR_CTRL_PRESS_ON | BMP388_PWR_CTRL_TEMP_ON | BMP388_PWR_CTRL_MODE_NORMAL;
+
+	uint8_t fifo_config_1 = BMP388_FIFO_CONFIG_1_FIFO_MODE_ON | BMP388_FIFO_CONFIG_1_FIFO_STOP_ON_FULL_ON |
+                            BMP388_FIFO_CONFIG_1_FIFO_TIME_EN_ON | BMP388_FIFO_CONFIG_1_FIFO_PRESS_EN_ON |
+							BMP388_FIFO_CONFIG_1_FIFO_TEMP_EN_ON;
+
+	uint8_t oversampling = bmp->_oversampling;
+	uint8_t odr = bmp->_odr;
+	uint8_t filtercoeff = bmp->_filtercoeff;
+
+
+
+	// Set OSR register
+	rslt = BMP388_WriteBytes(bmp, OSR, &oversampling, 1);
+	if(rslt != HAL_OK){
+		return rslt;
+	}
+	// Set ODR register
+	rslt = BMP388_WriteBytes(bmp, ODR, &odr, 1);
+	if(rslt != HAL_OK){
+		return rslt;
+	}
+	// Set CONFIG register
+	rslt = BMP388_WriteBytes(bmp, CONFIG, &filtercoeff, 1);
+	if(rslt != HAL_OK){
+		return rslt;
+	}
+	// Set PWR_CTRL register
+	rslt = BMP388_WriteBytes(bmp, PWR_CTRL, &pwr_ctrl, 1);
+	if(rslt != HAL_OK){
+		return rslt;
+	}
+	// Set FIFO_CONFIG_1 register
+	rslt = BMP388_WriteBytes(bmp, FIFO_CONFIG_1, &fifo_config_1, 1);
+	if(rslt != HAL_OK){
+		return rslt;
+	}
+
+	return rslt;
+}
+
+
+
+HAL_StatusTypeDef BMP388_GetAllFIFO(BMP388_HandleTypeDef *bmp, uint8_t *buff){
+	HAL_StatusTypeDef rslt;
+
+	uint8_t raw_fifo_len[2];
+
+	rslt = BMP388_ReadBytes(bmp, FIFO_LENGTH_0, raw_fifo_len, 2);
+	if(rslt != HAL_OK){
+		return rslt;
+	}
+
+	uint16_t fifo_len = (uint16_t)raw_fifo_len[0] | (uint16_t)raw_fifo_len[1] << 8;
+
+	rslt = BMP388_ReadBytes(bmp, FIFO_LENGTH_0, raw_fifo_len, 2);
+	if(rslt != HAL_OK){
+		return rslt;
+	}
+
+
+
+
+
+	return rslt;
+}
+
+
+
 
 
 /* ----------------------------- */
