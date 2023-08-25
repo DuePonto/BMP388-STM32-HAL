@@ -162,7 +162,10 @@ HAL_StatusTypeDef    BMP388_ReadRawPressTempTime(BMP388_HandleTypeDef *bmp, uint
              void    BMP388_CompensateRawPressTemp(BMP388_HandleTypeDef *bmp, uint32_t raw_pressure, uint32_t raw_temperature,
                                                                                  float *pressure, float *temperature);
             float    BMP388_FindAltitude(float ground_pressure, float pressure);
+
 HAL_StatusTypeDef    BMP388_StartNormalModeFIFO(BMP388_HandleTypeDef *bmp);
+HAL_StatusTypeDef    BMP388_GetFIFOLength(BMP388_HandleTypeDef *bmp, uint16_t *len);
+HAL_StatusTypeDef    BMP388_GetRawDataFIFO(BMP388_HandleTypeDef *bmp, uint16_t bytes_num, uint8_t raw_data[]);
 
 #endif /* LIB_BMP388_HAL_BMP388_H_ */
 

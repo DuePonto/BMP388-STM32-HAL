@@ -289,7 +289,8 @@ HAL_StatusTypeDef BMP388_StartNormalModeFIFO(BMP388_HandleTypeDef *bmp){
 
 
 
-HAL_StatusTypeDef BMP388_GetAllFIFO(BMP388_HandleTypeDef *bmp, uint8_t *buff){
+
+HAL_StatusTypeDef BMP388_GetFIFOLength(BMP388_HandleTypeDef *bmp, uint16_t *len){
 	HAL_StatusTypeDef rslt;
 
 	uint8_t raw_fifo_len[2];
@@ -299,20 +300,25 @@ HAL_StatusTypeDef BMP388_GetAllFIFO(BMP388_HandleTypeDef *bmp, uint8_t *buff){
 		return rslt;
 	}
 
-	uint16_t fifo_len = (uint16_t)raw_fifo_len[0] | (uint16_t)raw_fifo_len[1] << 8;
+	*len = raw_fifo_len[1] << 8 | raw_fifo_len[0];
 
-	rslt = BMP388_ReadBytes(bmp, FIFO_LENGTH_0, raw_fifo_len, 2);
+	return rslt;
+}
+
+
+
+HAL_StatusTypeDef BMP388_GetRawDataFIFO(BMP388_HandleTypeDef *bmp, uint16_t bytes_num, uint8_t raw_data[]){
+	HAL_StatusTypeDef rslt;
+
+
+	rslt = BMP388_ReadBytes(bmp, FIFO_DATA, raw_data, bytes_num+4);
 	if(rslt != HAL_OK){
 		return rslt;
 	}
 
 
-
-
-
 	return rslt;
 }
-
 
 
 
