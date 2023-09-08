@@ -142,21 +142,6 @@ typedef struct{
 	float		par_p11;
 }Calib_data;
 
-/* Structure to store raw data from FIFO */
-typedef struct{
-	uint32_t    raw_press;
-	uint32_t    raw_temp;
-	float       time;
-}BMP388_raw_data_frame;
-
-///* Structure to store cooked data */
-//typedef struct{
-//	float       press;
-//	float       temp;
-//	float       time;
-//}BMP388_data_frame;
-
-
 
 
 /* BMP388 structure -----------------------------------------------------------------*/
