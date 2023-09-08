@@ -62,6 +62,11 @@
 
 #define BMP388_CALIBDATA_LEN	21
 
+// FIFO
+#define BMP388_NORMAL_PRESS_AND_TEMP_FRAME_HEADER    0x94U
+#define BMP388_SENSOR_TIME_FRAME_HEADER              0xA0U
+#define BMP388_EMPTY_FRAME_HEADER                    0x80U
+
 /* ----- REGISTER MACROS ----- */
 
 #define BMP388_PWR_CTRL_PRESS_ON	1U
@@ -72,6 +77,16 @@
 #define BMP388_PWR_CTRL_MODE_FORCED	(1U << 4)
 #define BMP388_PWR_CTRL_MODE_NORMAL	(0b11U << 4)
 
+#define BMP388_FIFO_CONFIG_1_FIFO_MODE_ON            1U
+#define BMP388_FIFO_CONFIG_1_FIFO_MODE_OFF           0U
+#define BMP388_FIFO_CONFIG_1_FIFO_STOP_ON_FULL_ON    (1U << 1)
+#define BMP388_FIFO_CONFIG_1_FIFO_STOP_ON_FULL_OFF   0U
+#define BMP388_FIFO_CONFIG_1_FIFO_TIME_EN_ON         (1U << 2)
+#define BMP388_FIFO_CONFIG_1_FIFO_TIME_EN_OFF        0U8
+#define BMP388_FIFO_CONFIG_1_FIFO_PRESS_EN_ON        (1U << 3)
+#define BMP388_FIFO_CONFIG_1_FIFO_PRESS_EN_OFF       0U
+#define BMP388_FIFO_CONFIG_1_FIFO_TEMP_EN_ON         (1U << 4)
+#define BMP388_FIFO_CONFIG_1_FIFO_TEMP_EN_OFF        0U
 
 
 
@@ -129,7 +144,6 @@ typedef struct{
 
 
 
-
 /* BMP388 structure -----------------------------------------------------------------*/
 typedef struct{
 	I2C_HandleTypeDef 		*_hi2c;
@@ -152,6 +166,10 @@ HAL_StatusTypeDef    BMP388_ReadRawPressTempTime(BMP388_HandleTypeDef *bmp, uint
              void    BMP388_CompensateRawPressTemp(BMP388_HandleTypeDef *bmp, uint32_t raw_pressure, uint32_t raw_temperature,
                                                                                  float *pressure, float *temperature);
             float    BMP388_FindAltitude(float ground_pressure, float pressure);
+
+HAL_StatusTypeDef    BMP388_StartNormalModeFIFO(BMP388_HandleTypeDef *bmp);
+HAL_StatusTypeDef    BMP388_GetFIFOLength(BMP388_HandleTypeDef *bmp, uint16_t *len);
+HAL_StatusTypeDef    BMP388_GetRawDataFIFO(BMP388_HandleTypeDef *bmp, uint16_t bytes_num, uint8_t raw_data[]);
 
 #endif /* LIB_BMP388_HAL_BMP388_H_ */
 
