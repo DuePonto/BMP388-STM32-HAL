@@ -62,6 +62,11 @@
 
 #define BMP388_CALIBDATA_LEN	21
 
+// FIFO
+#define BMP388_NORMAL_PRESS_AND_TEMP_FRAME_HEADER    0x94U
+#define BMP388_SENSOR_TIME_FRAME_HEADER              0xA0U
+#define BMP388_EMPTY_FRAME_HEADER                    0x80U
+
 /* ----- REGISTER MACROS ----- */
 
 #define BMP388_PWR_CTRL_PRESS_ON	1U
@@ -136,6 +141,20 @@ typedef struct{
 	float		par_p10;
 	float		par_p11;
 }Calib_data;
+
+/* Structure to store raw data from FIFO */
+typedef struct{
+	uint32_t    raw_press;
+	uint32_t    raw_temp;
+	float       time;
+}BMP388_raw_data_frame;
+
+///* Structure to store cooked data */
+//typedef struct{
+//	float       press;
+//	float       temp;
+//	float       time;
+//}BMP388_data_frame;
 
 
 
