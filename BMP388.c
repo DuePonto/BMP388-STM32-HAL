@@ -103,7 +103,7 @@ HAL_StatusTypeDef BMP388_SetIIRFilterCoeff(BMP388_HandleTypeDef *bmp, uint8_t fi
 	if(filtercoeff > BMP3_IIR_FILTER_COEFF_127){
 		return HAL_ERROR;
 	}
-	bmp->_filtercoeff = filtercoeff;
+	bmp->_filtercoeff = filtercoeff << 1;
 	return HAL_OK;
 }
 
