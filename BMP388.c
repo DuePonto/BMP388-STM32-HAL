@@ -190,22 +190,13 @@ HAL_StatusTypeDef BMP388_ReadRawPressTempTime(BMP388_HandleTypeDef *bmp, uint32_
 	uint32_t data_msb;
 
 	// Parsing pressure data
-	data_xlsb = (uint32_t)raw_data[0];
-	data_lsb = (uint32_t)raw_data[1] << 8;
-	data_msb = (uint32_t)raw_data[2] << 16;
-	*raw_pressure = data_msb | data_lsb | data_xlsb;
+	*raw_pressure = (uint32_t)raw_data[2] << 16 | (uint32_t)raw_data[1] << 8 | (uint32_t)raw_data[0];
 
 	// Parsing temperature data
-	data_xlsb = (uint32_t)raw_data[3];
-	data_lsb = (uint32_t)raw_data[4] << 8;
-	data_msb = (uint32_t)raw_data[5] << 16;
-	*raw_temperature = data_msb | data_lsb | data_xlsb;
+	*raw_temperature = (uint32_t)raw_data[5] << 16 | (uint32_t)raw_data[4] << 8 | (uint32_t)raw_data[3];
 
 	// Parsing time bytes
-	data_xlsb = (uint32_t)raw_data[8];
-	data_lsb = (uint32_t)raw_data[9] << 8;
-	data_msb = (uint32_t)raw_data[10] << 16;
-	*time = data_msb | data_lsb | data_xlsb;
+	*time = (uint32_t)raw_data[10] << 16 | (uint32_t)raw_data[9] << 8 | (uint32_t)raw_data[8];
 
 
 	return rslt;
