@@ -73,7 +73,7 @@ HAL_StatusTypeDef BMP388_SetTempOS(BMP388_HandleTypeDef *bmp, uint8_t oversample
 	if(oversample > BMP388_OVERSAMPLING_32X){
 		return HAL_ERROR;
 	}
-	bmp->_oversampling = (bmp->_oversampling & 0b11111000) | (oversample << 3);
+	bmp->_oversampling = (bmp->_oversampling & 0b11000111) | (oversample << 3);
 	return HAL_OK;
 }
 
@@ -92,7 +92,7 @@ HAL_StatusTypeDef BMP388_SetPressOS(BMP388_HandleTypeDef *bmp, uint8_t oversampl
 	if(oversample > BMP388_OVERSAMPLING_32X){
 		return HAL_ERROR;
 	}
-	bmp->_oversampling = (bmp->_oversampling & 0b11000111) | oversample;
+	bmp->_oversampling = (bmp->_oversampling & 0b11111000) | oversample;
 	return HAL_OK;
 }
 
