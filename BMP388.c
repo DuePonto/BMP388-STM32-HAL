@@ -80,7 +80,7 @@ HAL_StatusTypeDef BMP388_SetTempOS(BMP388_HandleTypeDef *bmp, uint8_t oversample
 
 
 /*!
- *  @brief Function to set pressure measurment oversampling
+ *  @brief Function to set pressure measurement oversampling
  *
  *	@param[in] bmp			: Pointer to BMP388 structure
  *
@@ -98,7 +98,15 @@ HAL_StatusTypeDef BMP388_SetPressOS(BMP388_HandleTypeDef *bmp, uint8_t oversampl
 
 
 
-
+/*!
+ *  @brief Function to set IIR filter coefficient
+ *
+ *	@param[in] bmp			: Pointer to BMP388 structure
+ *
+ *  @return Status of execution
+ *  @retval = HAL_OK  		-> Success
+ *  @retval != HAL_OK	  	-> Wrong filter coefficient
+ */
 HAL_StatusTypeDef BMP388_SetIIRFilterCoeff(BMP388_HandleTypeDef *bmp, uint8_t filtercoeff){
 	if(filtercoeff > BMP3_IIR_FILTER_COEFF_127){
 		return HAL_ERROR;
@@ -109,7 +117,15 @@ HAL_StatusTypeDef BMP388_SetIIRFilterCoeff(BMP388_HandleTypeDef *bmp, uint8_t fi
 
 
 
-
+/*!
+ *  @brief Function to set pressure measurement oversampling
+ *
+ *	@param[in] bmp			: Pointer to BMP388 structure
+ *
+ *  @return Status of execution
+ *  @retval = HAL_OK  		-> Success
+ *  @retval != HAL_OK	  	-> Wrong oversampling mode
+ */
 HAL_StatusTypeDef BMP388_SetOutputDataRate(BMP388_HandleTypeDef *bmp, uint8_t odr){
 	if(odr > BMP3_ODR_0_001_HZ){
 		return HAL_ERROR;
@@ -486,7 +502,7 @@ float BMP388_CompensateTemp(BMP388_HandleTypeDef *bmp, uint32_t raw_temp, float 
  *  @brief Function to compensate raw pressure data
  *
  *	@param[in] bmp			: Pointer to BMP388 structure
- *	@param[in] temp			: Temperature that assosiated with pressure measurment
+ *	@param[in] temp			: Temperature that associated with pressure measurement
  *	@param[in] raw_press	: Raw pressure data that need to be compensated
  *	@param[out] press		: Measured pressure in Pa
  *
