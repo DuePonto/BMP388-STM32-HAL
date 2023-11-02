@@ -170,6 +170,8 @@ HAL_StatusTypeDef    BMP388_ReadRawPressTempTime(BMP388_HandleTypeDef *bmp, uint
 HAL_StatusTypeDef    BMP388_StartNormalModeFIFO(BMP388_HandleTypeDef *bmp);
 HAL_StatusTypeDef    BMP388_GetFIFOLength(BMP388_HandleTypeDef *bmp, uint16_t *len);
 HAL_StatusTypeDef    BMP388_GetRawDataFIFO(BMP388_HandleTypeDef *bmp, uint16_t bytes_num, uint8_t raw_data[]);
+//
+//HAL_StatusTypeDef	BMP388_ReadBytes(BMP388_HandleTypeDef *bmp, BMP388_regs reg_addr, uint8_t *buff, uint8_t len);
 
 #endif /* LIB_BMP388_HAL_BMP388_H_ */
 
