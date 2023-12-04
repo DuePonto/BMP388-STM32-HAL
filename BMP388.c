@@ -73,14 +73,14 @@ HAL_StatusTypeDef BMP388_SetTempOS(BMP388_HandleTypeDef *bmp, uint8_t oversample
 	if(oversample > BMP388_OVERSAMPLING_32X){
 		return HAL_ERROR;
 	}
-	bmp->_oversampling = (bmp->_oversampling & 0b11111000) | (oversample << 3);
+	bmp->_oversampling = (bmp->_oversampling & 0b11000111) | (oversample << 3);
 	return HAL_OK;
 }
 
 
 
 /*!
- *  @brief Function to set pressure measurment oversampling
+ *  @brief Function to set pressure measurement oversampling
  *
  *	@param[in] bmp			: Pointer to BMP388 structure
  *
@@ -92,24 +92,40 @@ HAL_StatusTypeDef BMP388_SetPressOS(BMP388_HandleTypeDef *bmp, uint8_t oversampl
 	if(oversample > BMP388_OVERSAMPLING_32X){
 		return HAL_ERROR;
 	}
-	bmp->_oversampling = (bmp->_oversampling & 0b11000111) | oversample;
+	bmp->_oversampling = (bmp->_oversampling & 0b11111000) | oversample;
 	return HAL_OK;
 }
 
 
 
-
+/*!
+ *  @brief Function to set IIR filter coefficient
+ *
+ *	@param[in] bmp			: Pointer to BMP388 structure
+ *
+ *  @return Status of execution
+ *  @retval = HAL_OK  		-> Success
+ *  @retval != HAL_OK	  	-> Wrong filter coefficient
+ */
 HAL_StatusTypeDef BMP388_SetIIRFilterCoeff(BMP388_HandleTypeDef *bmp, uint8_t filtercoeff){
 	if(filtercoeff > BMP3_IIR_FILTER_COEFF_127){
 		return HAL_ERROR;
 	}
-	bmp->_filtercoeff = filtercoeff;
+	bmp->_filtercoeff = filtercoeff << 1;
 	return HAL_OK;
 }
 
 
 
-
+/*!
+ *  @brief Function to set pressure measurement oversampling
+ *
+ *	@param[in] bmp			: Pointer to BMP388 structure
+ *
+ *  @return Status of execution
+ *  @retval = HAL_OK  		-> Success
+ *  @retval != HAL_OK	  	-> Wrong oversampling mode
+ */
 HAL_StatusTypeDef BMP388_SetOutputDataRate(BMP388_HandleTypeDef *bmp, uint8_t odr){
 	if(odr > BMP3_ODR_0_001_HZ){
 		return HAL_ERROR;
@@ -174,22 +190,13 @@ HAL_StatusTypeDef BMP388_ReadRawPressTempTime(BMP388_HandleTypeDef *bmp, uint32_
 	uint32_t data_msb;
 
 	// Parsing pressure data
-	data_xlsb = (uint32_t)raw_data[0];
-	data_lsb = (uint32_t)raw_data[1] << 8;
-	data_msb = (uint32_t)raw_data[2] << 16;
-	*raw_pressure = data_msb | data_lsb | data_xlsb;
+	*raw_pressure = (uint32_t)raw_data[2] << 16 | (uint32_t)raw_data[1] << 8 | (uint32_t)raw_data[0];
 
 	// Parsing temperature data
-	data_xlsb = (uint32_t)raw_data[3];
-	data_lsb = (uint32_t)raw_data[4] << 8;
-	data_msb = (uint32_t)raw_data[5] << 16;
-	*raw_temperature = data_msb | data_lsb | data_xlsb;
+	*raw_temperature = (uint32_t)raw_data[5] << 16 | (uint32_t)raw_data[4] << 8 | (uint32_t)raw_data[3];
 
 	// Parsing time bytes
-	data_xlsb = (uint32_t)raw_data[8];
-	data_lsb = (uint32_t)raw_data[9] << 8;
-	data_msb = (uint32_t)raw_data[10] << 16;
-	*time = data_msb | data_lsb | data_xlsb;
+	*time = (uint32_t)raw_data[10] << 16 | (uint32_t)raw_data[9] << 8 | (uint32_t)raw_data[8];
 
 
 	return rslt;
@@ -241,6 +248,84 @@ float BMP388_FindAltitude(float ground_pressure, float pressure){
 	return 44330.0 * (1.0 - pow(pressure / ground_pressure, 0.1903));
 }
 
+
+
+HAL_StatusTypeDef BMP388_StartNormalModeFIFO(BMP388_HandleTypeDef *bmp){
+	HAL_StatusTypeDef rslt;
+
+	uint8_t pwr_ctrl = BMP388_PWR_CTRL_PRESS_ON | BMP388_PWR_CTRL_TEMP_ON | BMP388_PWR_CTRL_MODE_NORMAL;
+
+	uint8_t fifo_config_1 = BMP388_FIFO_CONFIG_1_FIFO_MODE_ON | BMP388_FIFO_CONFIG_1_FIFO_STOP_ON_FULL_ON |
+                            BMP388_FIFO_CONFIG_1_FIFO_TIME_EN_ON | BMP388_FIFO_CONFIG_1_FIFO_PRESS_EN_ON |
+							BMP388_FIFO_CONFIG_1_FIFO_TEMP_EN_ON;
+
+	uint8_t oversampling = bmp->_oversampling;
+	uint8_t odr = bmp->_odr;
+	uint8_t filtercoeff = bmp->_filtercoeff;
+
+
+
+	// Set OSR register
+	rslt = BMP388_WriteBytes(bmp, OSR, &oversampling, 1);
+	if(rslt != HAL_OK){
+		return rslt;
+	}
+	// Set ODR register
+	rslt = BMP388_WriteBytes(bmp, ODR, &odr, 1);
+	if(rslt != HAL_OK){
+		return rslt;
+	}
+	// Set CONFIG register
+	rslt = BMP388_WriteBytes(bmp, CONFIG, &filtercoeff, 1);
+	if(rslt != HAL_OK){
+		return rslt;
+	}
+	// Set PWR_CTRL register
+	rslt = BMP388_WriteBytes(bmp, PWR_CTRL, &pwr_ctrl, 1);
+	if(rslt != HAL_OK){
+		return rslt;
+	}
+	// Set FIFO_CONFIG_1 register
+	rslt = BMP388_WriteBytes(bmp, FIFO_CONFIG_1, &fifo_config_1, 1);
+	if(rslt != HAL_OK){
+		return rslt;
+	}
+
+	return rslt;
+}
+
+
+
+
+HAL_StatusTypeDef BMP388_GetFIFOLength(BMP388_HandleTypeDef *bmp, uint16_t *len){
+	HAL_StatusTypeDef rslt;
+
+	uint8_t raw_fifo_len[2];
+
+	rslt = BMP388_ReadBytes(bmp, FIFO_LENGTH_0, raw_fifo_len, 2);
+	if(rslt != HAL_OK){
+		return rslt;
+	}
+
+	*len = raw_fifo_len[1] << 8 | raw_fifo_len[0];
+
+	return rslt;
+}
+
+
+
+HAL_StatusTypeDef BMP388_GetRawDataFIFO(BMP388_HandleTypeDef *bmp, uint16_t bytes_num, uint8_t raw_data[]){
+	HAL_StatusTypeDef rslt;
+
+
+	rslt = BMP388_ReadBytes(bmp, FIFO_DATA, raw_data, bytes_num+4);
+	if(rslt != HAL_OK){
+		return rslt;
+	}
+
+
+	return rslt;
+}
 
 
 
@@ -408,7 +493,7 @@ float BMP388_CompensateTemp(BMP388_HandleTypeDef *bmp, uint32_t raw_temp, float 
  *  @brief Function to compensate raw pressure data
  *
  *	@param[in] bmp			: Pointer to BMP388 structure
- *	@param[in] temp			: Temperature that assosiated with pressure measurment
+ *	@param[in] temp			: Temperature that associated with pressure measurement
  *	@param[in] raw_press	: Raw pressure data that need to be compensated
  *	@param[out] press		: Measured pressure in Pa
  *
