@@ -23,44 +23,44 @@
 #define BMP388_SOFTRESET			0xB6
 
 // Over sampling macros
-#define BMP388_NO_OVERSAMPLING		0b00000000
-#define BMP388_OVERSAMPLING_2X      0b00000001
-#define BMP388_OVERSAMPLING_4X      0b00000010
-#define BMP388_OVERSAMPLING_8X      0b00000011
-#define BMP388_OVERSAMPLING_16X     0b00000100
-#define BMP388_OVERSAMPLING_32X     0b00000101
+#define BMP388_NO_OVERSAMPLING		0x00
+#define BMP388_OVERSAMPLING_2X      0x01
+#define BMP388_OVERSAMPLING_4X      0x02
+#define BMP388_OVERSAMPLING_8X      0x03
+#define BMP388_OVERSAMPLING_16X     0x04
+#define BMP388_OVERSAMPLING_32X     0x05
 
 // Filter setting macros
-#define BMP3_IIR_FILTER_DISABLE     0b00000000
-#define BMP3_IIR_FILTER_COEFF_1     0b00000001
-#define BMP3_IIR_FILTER_COEFF_3     0b00000010
-#define BMP3_IIR_FILTER_COEFF_7     0b00000011
-#define BMP3_IIR_FILTER_COEFF_15    0b00000100
-#define BMP3_IIR_FILTER_COEFF_31    0b00000101
-#define BMP3_IIR_FILTER_COEFF_63    0b00000110
-#define BMP3_IIR_FILTER_COEFF_127   0b00000111
+#define BMP3_IIR_FILTER_DISABLE     0x00
+#define BMP3_IIR_FILTER_COEFF_1     0x01
+#define BMP3_IIR_FILTER_COEFF_3     0x02
+#define BMP3_IIR_FILTER_COEFF_7     0x03
+#define BMP3_IIR_FILTER_COEFF_15    0x04
+#define BMP3_IIR_FILTER_COEFF_31    0x05
+#define BMP3_IIR_FILTER_COEFF_63    0x06
+#define BMP3_IIR_FILTER_COEFF_127   0x07
 
 // output data rate macros
-#define BMP3_ODR_200_HZ             0b00000000
-#define BMP3_ODR_100_HZ             0b00000001
-#define BMP3_ODR_50_HZ              0b00000010
-#define BMP3_ODR_25_HZ              0b00000011
-#define BMP3_ODR_12_5_HZ            0b00000100
-#define BMP3_ODR_6_25_HZ            0b00000101
-#define BMP3_ODR_3_1_HZ             0b00000110
-#define BMP3_ODR_1_5_HZ             0b00000111
-#define BMP3_ODR_0_78_HZ            0b00001000
-#define BMP3_ODR_0_39_HZ            0b00001001
-#define BMP3_ODR_0_2_HZ             0b00001010
-#define BMP3_ODR_0_1_HZ             0b00001011
-#define BMP3_ODR_0_05_HZ            0b00001100
-#define BMP3_ODR_0_02_HZ            0b00001101
-#define BMP3_ODR_0_01_HZ            0b00001110
-#define BMP3_ODR_0_006_HZ           0b00001111
-#define BMP3_ODR_0_003_HZ           0b00010000
-#define BMP3_ODR_0_001_HZ           0b00010001
+#define BMP3_ODR_200_HZ             0x00
+#define BMP3_ODR_100_HZ             0x01
+#define BMP3_ODR_50_HZ              0x02
+#define BMP3_ODR_25_HZ              0x03
+#define BMP3_ODR_12_5_HZ            0x04
+#define BMP3_ODR_6_25_HZ            0x05
+#define BMP3_ODR_3_1_HZ             0x06
+#define BMP3_ODR_1_5_HZ             0x07
+#define BMP3_ODR_0_78_HZ            0x08
+#define BMP3_ODR_0_39_HZ            0x09
+#define BMP3_ODR_0_2_HZ             0x0A
+#define BMP3_ODR_0_1_HZ             0x0B
+#define BMP3_ODR_0_05_HZ            0x0C
+#define BMP3_ODR_0_02_HZ            0x0D
+#define BMP3_ODR_0_01_HZ            0x0E
+#define BMP3_ODR_0_006_HZ           0x0F
+#define BMP3_ODR_0_003_HZ           0x10
+#define BMP3_ODR_0_001_HZ           0x11
 
-#define BMP388_CALIBDATA_LEN	21
+#define BMP388_CALIBDATA_LEN		21
 
 // FIFO
 #define BMP388_NORMAL_PRESS_AND_TEMP_FRAME_HEADER    0x94U
