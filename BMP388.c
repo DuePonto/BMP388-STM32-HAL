@@ -40,7 +40,7 @@ HAL_StatusTypeDef BMP388_Init(BMP388_HandleTypeDef *bmp){
 
 	// Read CHIP_ID byte
 	rslt = BMP388_ReadBytes(bmp, CHIP_ID, &chip_id, 1);
-	if(rslt == HAL_OK && chip_id == BMP388_CHIP_ID){
+	if(rslt == HAL_OK && chip_id == BMP3_CHIP_ID){
 		// using softreset command
 		rslt = BMP388_SoftReset(bmp);
 		if(rslt == HAL_OK){
@@ -73,7 +73,7 @@ HAL_StatusTypeDef BMP388_SetTempOS(BMP388_HandleTypeDef *bmp, uint8_t oversample
 	if(oversample > BMP388_OVERSAMPLING_32X){
 		return HAL_ERROR;
 	}
-	bmp->_oversampling = (bmp->_oversampling & 0b11000111) | (oversample << 3);
+	bmp->osr = (bmp->osr & 0xC7) | (oversample << 3); // == 0b11000111
 	return HAL_OK;
 }
 
@@ -92,7 +92,7 @@ HAL_StatusTypeDef BMP388_SetPressOS(BMP388_HandleTypeDef *bmp, uint8_t oversampl
 	if(oversample > BMP388_OVERSAMPLING_32X){
 		return HAL_ERROR;
 	}
-	bmp->_oversampling = (bmp->_oversampling & 0b11111000) | oversample;
+	bmp->osr = (bmp->osr & 0xF8) | oversample; // 0xF8 == 0b11111000
 	return HAL_OK;
 }
 
@@ -111,7 +111,7 @@ HAL_StatusTypeDef BMP388_SetIIRFilterCoeff(BMP388_HandleTypeDef *bmp, uint8_t fi
 	if(filtercoeff > BMP3_IIR_FILTER_COEFF_127){
 		return HAL_ERROR;
 	}
-	bmp->_filtercoeff = filtercoeff << 1;
+	bmp->iir = filtercoeff << 1;
 	return HAL_OK;
 }
 
@@ -130,7 +130,7 @@ HAL_StatusTypeDef BMP388_SetOutputDataRate(BMP388_HandleTypeDef *bmp, uint8_t od
 	if(odr > BMP3_ODR_0_001_HZ){
 		return HAL_ERROR;
 	}
-	bmp->_odr = odr;
+	bmp->odr = odr;
 	return HAL_OK;
 }
 
@@ -149,11 +149,11 @@ HAL_StatusTypeDef BMP388_SetOutputDataRate(BMP388_HandleTypeDef *bmp, uint8_t od
  */
 HAL_StatusTypeDef BMP388_ReadRawPressTempTime(BMP388_HandleTypeDef *bmp, uint32_t *raw_pressure, uint32_t *raw_temperature, uint32_t *time){
 	HAL_StatusTypeDef rslt;
-	uint8_t pwr_ctrl = BMP388_PWR_CTRL_PRESS_ON | BMP388_PWR_CTRL_TEMP_ON | BMP388_PWR_CTRL_MODE_FORCED;
+	uint8_t pwr_ctrl = BMP3_PWR_CTRL_PRESS_ON | BMP3_PWR_CTRL_TEMP_ON | BMP3_PWR_CTRL_MODE_FORCED;
 
-	uint8_t oversampling = bmp->_oversampling;
-	uint8_t odr = bmp->_odr;
-	uint8_t filtercoeff = bmp->_filtercoeff;
+	uint8_t oversampling = bmp->osr;
+	uint8_t odr = bmp->odr;
+	uint8_t filtercoeff = bmp->iir;
 
 
 
@@ -184,10 +184,6 @@ HAL_StatusTypeDef BMP388_ReadRawPressTempTime(BMP388_HandleTypeDef *bmp, uint32_
 	if(rslt != HAL_OK){
 		return rslt;
 	}
-	// Temporary variables to store the sensor data
-	uint32_t data_xlsb;
-	uint32_t data_lsb;
-	uint32_t data_msb;
 
 	// Parsing pressure data
 	*raw_pressure = (uint32_t)raw_data[2] << 16 | (uint32_t)raw_data[1] << 8 | (uint32_t)raw_data[0];
@@ -253,15 +249,15 @@ float BMP388_FindAltitude(float ground_pressure, float pressure){
 HAL_StatusTypeDef BMP388_StartNormalModeFIFO(BMP388_HandleTypeDef *bmp){
 	HAL_StatusTypeDef rslt;
 
-	uint8_t pwr_ctrl = BMP388_PWR_CTRL_PRESS_ON | BMP388_PWR_CTRL_TEMP_ON | BMP388_PWR_CTRL_MODE_NORMAL;
+	uint8_t pwr_ctrl = BMP3_PWR_CTRL_PRESS_ON | BMP3_PWR_CTRL_TEMP_ON | BMP3_PWR_CTRL_MODE_NORMAL;
 
-	uint8_t fifo_config_1 = BMP388_FIFO_CONFIG_1_FIFO_MODE_ON | BMP388_FIFO_CONFIG_1_FIFO_STOP_ON_FULL_ON |
-                            BMP388_FIFO_CONFIG_1_FIFO_TIME_EN_ON | BMP388_FIFO_CONFIG_1_FIFO_PRESS_EN_ON |
-							BMP388_FIFO_CONFIG_1_FIFO_TEMP_EN_ON;
+	uint8_t fifo_config_1 = BMP3_FIFO_CONFIG_1_FIFO_MODE_ON | BMP3_FIFO_CONFIG_1_FIFO_STOP_ON_FULL_ON |
+                            BMP3_FIFO_CONFIG_1_FIFO_TIME_EN_ON | BMP3_FIFO_CONFIG_1_FIFO_PRESS_EN_ON |
+							BMP3_FIFO_CONFIG_1_FIFO_TEMP_EN_ON;
 
-	uint8_t oversampling = bmp->_oversampling;
-	uint8_t odr = bmp->_odr;
-	uint8_t filtercoeff = bmp->_filtercoeff;
+	uint8_t oversampling = bmp->osr;
+	uint8_t odr = bmp->odr;
+	uint8_t filtercoeff = bmp->iir;
 
 
 
@@ -352,7 +348,7 @@ HAL_StatusTypeDef BMP388_SoftReset(BMP388_HandleTypeDef *bmp){
 
 	// Reading STATUS reg to understand that the BMP388 is ready to receive command
 	rslt = BMP388_ReadBytes(bmp, STATUS, &cmd_rdy_status, 1);
-	if((rslt == HAL_OK) && (cmd_rdy_status & BMP388_CMD_RDY)){
+	if((rslt == HAL_OK) && (cmd_rdy_status & BMP3_CMD_RDY)){
 		// Writing SOFTRESET command to CMD reg
 		rslt = BMP388_WriteBytes(bmp, CMD, &rst_cmnd, 1);
 		if(rslt == HAL_OK){
@@ -384,7 +380,7 @@ HAL_StatusTypeDef BMP388_SoftReset(BMP388_HandleTypeDef *bmp){
  */
 HAL_StatusTypeDef BMP388_GetCalibData(BMP388_HandleTypeDef *bmp){
 	HAL_StatusTypeDef rslt;
-	uint8_t calib_buff[BMP388_CALIBDATA_LEN] = {0};
+	uint8_t calib_buff[BMP3_CALIBDATA_LEN] = {0};
 
 	uint16_t	raw_par_t1;
 	uint16_t	raw_par_t2;
@@ -401,66 +397,66 @@ HAL_StatusTypeDef BMP388_GetCalibData(BMP388_HandleTypeDef *bmp){
 	int8_t		raw_par_p10;
 	int8_t		raw_par_p11;
 
-	rslt = BMP388_ReadBytes(bmp, CALIB_DATA, calib_buff, BMP388_CALIBDATA_LEN);
+	rslt = BMP388_ReadBytes(bmp, CALIB_DATA, calib_buff, BMP3_CALIBDATA_LEN);
 
 	float temp_var;
 	if(rslt == HAL_OK){
 		// PAR_T1
 		temp_var = 0.00390625f;
 		raw_par_t1 = ((uint16_t)calib_buff[1] << 8) | (uint16_t)calib_buff[0];
-		bmp->_calib_data.par_t1 = (float)raw_par_t1 / temp_var;
+		bmp->calib_data.par_t1 = (float)raw_par_t1 / temp_var;
 		// PAR_T2
 		temp_var = 1073741824.f;
 		raw_par_t2 = ((uint16_t)calib_buff[3] << 8) | (uint16_t)calib_buff[2];
-		bmp->_calib_data.par_t2 = (float)raw_par_t2 / temp_var;
+		bmp->calib_data.par_t2 = (float)raw_par_t2 / temp_var;
 		// PAR_T3
 		temp_var = 281474976710656.f;
 		raw_par_t3 = calib_buff[4];
-		bmp->_calib_data.par_t3 = (float)raw_par_t3 / temp_var;
+		bmp->calib_data.par_t3 = (float)raw_par_t3 / temp_var;
 		// PAR_P1
 		temp_var = 1048576.f;
 		raw_par_p1 = ((int16_t)calib_buff[6] << 8) | (int16_t)calib_buff[5];
-		bmp->_calib_data.par_p1 = ((float)raw_par_p1 - 16384) / temp_var;
+		bmp->calib_data.par_p1 = ((float)raw_par_p1 - 16384) / temp_var;
 		// PAR_P2
 		temp_var = 536870912.f;
 		raw_par_p2 = ((int16_t)calib_buff[8] << 8) | (int16_t)calib_buff[7];
-		bmp->_calib_data.par_p2 = ((float)raw_par_p2 - 16384) / temp_var;
+		bmp->calib_data.par_p2 = ((float)raw_par_p2 - 16384) / temp_var;
 		// PAR_P3
 		temp_var = 4294967296.f;
 		raw_par_p3 = (int8_t)calib_buff[9];
-		bmp->_calib_data.par_p3 = (float)raw_par_p3 / temp_var;
+		bmp->calib_data.par_p3 = (float)raw_par_p3 / temp_var;
 		// PAR_P4
 		temp_var = 137438953472.f;
 		raw_par_p4 = (int8_t)calib_buff[10];
-		bmp->_calib_data.par_p4 = (float)raw_par_p4 / temp_var;
+		bmp->calib_data.par_p4 = (float)raw_par_p4 / temp_var;
 		// PAR_P5
 		temp_var = 0.125f;
 		raw_par_p5 = ((uint16_t)calib_buff[12] << 8) | (uint16_t)calib_buff[11];
-		bmp->_calib_data.par_p5 = (float)raw_par_p5 / temp_var;
+		bmp->calib_data.par_p5 = (float)raw_par_p5 / temp_var;
 		// PAR_P6
 		temp_var = 64.f;
 		raw_par_p6 = ((uint16_t)calib_buff[14] << 8) | (uint16_t)calib_buff[13];
-		bmp->_calib_data.par_p6 = (float)raw_par_p6 / temp_var;
+		bmp->calib_data.par_p6 = (float)raw_par_p6 / temp_var;
 		// PAR_P7
 		temp_var = 256.f;
 		raw_par_p7 = (int8_t)calib_buff[15];
-		bmp->_calib_data.par_p7 = (float)raw_par_p7 / temp_var;
+		bmp->calib_data.par_p7 = (float)raw_par_p7 / temp_var;
 		// PAR_P8
 		temp_var = 32768.f;
 		raw_par_p8 = (int8_t)calib_buff[16];
-		bmp->_calib_data.par_p8 = (float)raw_par_p8 / temp_var;
+		bmp->calib_data.par_p8 = (float)raw_par_p8 / temp_var;
 		// PAR_P9
 		temp_var = 281474976710656.f;
 		raw_par_p9 = ((int16_t)calib_buff[18] << 8) | (int16_t)calib_buff[17];
-		bmp->_calib_data.par_p9 = (float)raw_par_p9 / temp_var;
+		bmp->calib_data.par_p9 = (float)raw_par_p9 / temp_var;
 		// PAR_P10
 		temp_var = 281474976710656.f;
 		raw_par_p10 = (int8_t)calib_buff[19];
-		bmp->_calib_data.par_p10 = (float)raw_par_p10 / temp_var;
+		bmp->calib_data.par_p10 = (float)raw_par_p10 / temp_var;
 		// PAR_P11
 		temp_var = 36893488147419103232.f;
 		raw_par_p11 = (int8_t)calib_buff[20];
-		bmp->_calib_data.par_p11 = (float)raw_par_p11 / temp_var;
+		bmp->calib_data.par_p11 = (float)raw_par_p11 / temp_var;
 	}
 	return rslt;
 }
@@ -479,10 +475,10 @@ HAL_StatusTypeDef BMP388_GetCalibData(BMP388_HandleTypeDef *bmp){
  *  @retval != HAL_OK	  	-> Failure Info
  */
 float BMP388_CompensateTemp(BMP388_HandleTypeDef *bmp, uint32_t raw_temp, float *temp){
-    float partial_data1 = (float)(raw_temp - bmp->_calib_data.par_t1);;
-    float partial_data2 = (float)(partial_data1 * bmp->_calib_data.par_t2);
+    float partial_data1 = (float)(raw_temp - bmp->calib_data.par_t1);;
+    float partial_data2 = (float)(partial_data1 * bmp->calib_data.par_t2);
 
-    *temp = partial_data2 + (partial_data1 * partial_data1) * bmp->_calib_data.par_t3;
+    *temp = partial_data2 + (partial_data1 * partial_data1) * bmp->calib_data.par_t3;
 
     return *temp;
 }
@@ -510,20 +506,20 @@ float BMP388_CompensatePress(BMP388_HandleTypeDef *bmp, float temp, uint32_t raw
 
 
 
-    partial_data1 = bmp->_calib_data.par_p6 * temp;
-    partial_data2 = bmp->_calib_data.par_p7 * (temp * temp);
-    partial_data3 = bmp->_calib_data.par_p8 * (temp * temp * temp);
-    partial_out1 = bmp->_calib_data.par_p5 + partial_data1 + partial_data2 + partial_data3;
+    partial_data1 = bmp->calib_data.par_p6 * temp;
+    partial_data2 = bmp->calib_data.par_p7 * (temp * temp);
+    partial_data3 = bmp->calib_data.par_p8 * (temp * temp * temp);
+    partial_out1 = bmp->calib_data.par_p5 + partial_data1 + partial_data2 + partial_data3;
 
-    partial_data1 = bmp->_calib_data.par_p2 * temp;
-    partial_data2 = bmp->_calib_data.par_p3 * (temp * temp);
-    partial_data3 = bmp->_calib_data.par_p4 * (temp * temp * temp);
-    partial_out2 = (float)raw_press * (bmp->_calib_data.par_p1 + partial_data1 + partial_data2 + partial_data3);
+    partial_data1 = bmp->calib_data.par_p2 * temp;
+    partial_data2 = bmp->calib_data.par_p3 * (temp * temp);
+    partial_data3 = bmp->calib_data.par_p4 * (temp * temp * temp);
+    partial_out2 = (float)raw_press * (bmp->calib_data.par_p1 + partial_data1 + partial_data2 + partial_data3);
 
     partial_data1 = (float)raw_press * (float)raw_press;
-    partial_data2 = bmp->_calib_data.par_p9 + bmp->_calib_data.par_p10 * temp;
+    partial_data2 = bmp->calib_data.par_p9 + bmp->calib_data.par_p10 * temp;
     partial_data3 = partial_data1 * partial_data2;
-    partial_data4 = partial_data3 + ((float)raw_press * (float)raw_press * (float)raw_press) * bmp->_calib_data.par_p11;
+    partial_data4 = partial_data3 + ((float)raw_press * (float)raw_press * (float)raw_press) * bmp->calib_data.par_p11;
 
     *press = partial_out1 + partial_out2 + partial_data4;
 
@@ -545,7 +541,7 @@ float BMP388_CompensatePress(BMP388_HandleTypeDef *bmp, float temp, uint32_t raw
  *  @retval != HAL_ERROR 	-> Failure Info
  */
 HAL_StatusTypeDef BMP388_ReadBytes(BMP388_HandleTypeDef *bmp, BMP388_regs reg_addr, uint8_t *buff, uint8_t len){
-	return HAL_I2C_Mem_Read(bmp->_hi2c, BMP388_ADDR << 1, reg_addr, I2C_MEMADD_SIZE_8BIT, buff, len, 100);
+	return HAL_I2C_Mem_Read(bmp->hi2c, BMP3_ADDR << 1, reg_addr, I2C_MEMADD_SIZE_8BIT, buff, len, 100);
 }
 
 
@@ -563,6 +559,6 @@ HAL_StatusTypeDef BMP388_ReadBytes(BMP388_HandleTypeDef *bmp, BMP388_regs reg_ad
  *  @retval != HAL_ERROR 	-> Failure Info
  */
 HAL_StatusTypeDef BMP388_WriteBytes(BMP388_HandleTypeDef *bmp, BMP388_regs reg_addr, uint8_t *buff, uint8_t len){
-	return HAL_I2C_Mem_Write(bmp->_hi2c, BMP388_ADDR << 1, reg_addr, I2C_MEMADD_SIZE_8BIT, buff, len, 100);
+	return HAL_I2C_Mem_Write(bmp->hi2c, BMP3_ADDR << 1, reg_addr, I2C_MEMADD_SIZE_8BIT, buff, len, 100);
 }
 
