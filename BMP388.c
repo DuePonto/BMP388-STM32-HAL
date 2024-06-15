@@ -245,14 +245,21 @@ float BMP388_FindAltitude(float ground_pressure, float pressure){
 }
 
 
-
+/**
+ * @brief Function to start BMP measures in FIFO mode.
+ *        To find information about FIFO Data frames
+ *        use paragraph 3.6.5 in datasheet for BMP388
+ * 
+ * @param bmp 
+ * @return HAL_StatusTypeDef 
+ */
 HAL_StatusTypeDef BMP388_StartNormalModeFIFO(BMP388_HandleTypeDef *bmp){
 	HAL_StatusTypeDef rslt;
 
 	uint8_t pwr_ctrl = BMP3_PWR_CTRL_PRESS_ON | BMP3_PWR_CTRL_TEMP_ON | BMP3_PWR_CTRL_MODE_NORMAL;
 
 	uint8_t fifo_config_1 = BMP3_FIFO_CONFIG_1_FIFO_MODE_ON | BMP3_FIFO_CONFIG_1_FIFO_STOP_ON_FULL_ON |
-                            BMP3_FIFO_CONFIG_1_FIFO_TIME_EN_ON | BMP3_FIFO_CONFIG_1_FIFO_PRESS_EN_ON |
+                            BMP3_FIFO_CONFIG_1_FIFO_TIME_EN_OFF | BMP3_FIFO_CONFIG_1_FIFO_PRESS_EN_ON |
 							BMP3_FIFO_CONFIG_1_FIFO_TEMP_EN_ON;
 
 	uint8_t oversampling = bmp->osr;
